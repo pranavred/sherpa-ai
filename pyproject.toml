@@ -1,0 +1,17 @@
+[project]
+name = "sherpa-ai"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "pipecat-ai[daily,google,silero]>=0.0.67",
+    "pillow>=10.0.0",
+    "mss>=9.0.1",
+    "python-dotenv>=1.0.0",
+    "aiohttp>=3.9.0",
+    "google-generativeai>=0.3.0",
+    "loguru>=0.7.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
