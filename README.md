@@ -552,7 +552,7 @@ llm = GoogleLLMService(
 
 ## Credits
 
-Built with ❤️ for the Google Gemini API Developer Competition
+Built with ❤️ for the AI Tinkerers Gemini Pipecat Hackathon
 
 **Technologies**:
 
@@ -562,18 +562,7 @@ Built with ❤️ for the Google Gemini API Developer Competition
 - [mss](https://github.com/BoboTiG/python-mss) - Screenshot capture
 - [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/) - Audio I/O
 
-## License
 
-MIT License - See LICENSE file for details
-
-## Contributing
-
-This is a hackathon project, but contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Test your changes
-4. Submit a pull request
 
 ## Support
 
