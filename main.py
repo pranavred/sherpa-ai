@@ -14,7 +14,7 @@ from src.voice.sherpa_bot import start_voice_intervention
 load_dotenv()
 
 # Configuration
-SCREENSHOT_INTERVAL_SECONDS = 10  # How often to take screenshots (in seconds)
+SCREENSHOT_INTERVAL_SECONDS = 20  # How often to take screenshots (in seconds)
 
 
 class SherpaApp:

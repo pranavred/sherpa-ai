@@ -1,45 +1,63 @@
-# Sherpa AI - Your Productivity Coach
+# Sherpa AI - Your AI Productivity Coach 🏔️
 
-An AI-powered productivity assistant that monitors your screen activity and provides gentle voice interventions when you get distracted.
+> **An AI-powered productivity assistant that monitors your screen and provides gentle voice interventions when you get distracted.**
 
-Built for the AI Tinkerers Gemini Pipecat Hackathon.
-
----
-
-## Demo Video
-
-[Demo Video - Watch Here] (60-120 seconds showing the product in action)
-
-Note: The demo shows:
-
-- Starting Sherpa and setting your task
-- Screen monitoring in action
-- Getting distracted (e.g., browsing Reddit)
-- Sherpa detecting the distraction and speaking to you
-- Voice conversation with Sherpa
-- Getting back on task
+Built with **Gemini 2.0 Flash** and **Pipecat AI** for the AI Tinkerers Gemini x Pipecat Hackathon.
 
 ---
 
-## Hackathon Submission Details
+## 🎥 Demo Video
+
+[![Sherpa AI Demo](https://img.youtube.com/vi/2af80VaH_A8/maxresdefault.jpg)](https://youtu.be/2af80VaH_A8)
+
+**[▶️ Watch the Demo](https://youtu.be/2af80VaH_A8)**
+
+The demo shows:
+
+- 🚀 Starting Sherpa and setting your task
+- 📸 Real-time screen monitoring with Gemini Vision
+- 🎯 Getting distracted (browsing Reddit r/NYCApartments while coding)
+- ⚠️ Sherpa detecting the distraction instantly
+- 🎤 Natural voice conversation intervention
+- ✅ Getting back on track
+
+---
+
+## 🏆 Why Sherpa Stands Out
+
+**The Problem:** We all get distracted. Productivity apps track time but don't intervene. Browser blockers are too harsh. What if your computer could gently tap you on the shoulder?
+
+**The Solution:** Sherpa uses Gemini Vision to understand what you're actually doing, then has a real voice conversation to help you refocus—with empathy, not judgment.
+
+**What Makes It Special:**
+
+- 🧠 **Context-aware**: Knows the difference between research and procrastination
+- 🎙️ **Actually talks to you**: Not a notification—a real conversation
+- 💚 **Supportive, not punishing**: Acts like a coach, not a boss
+- 🏃 **Built in 48 hours**: From zero to fully working voice AI system
+
+---
+
+## 🛠️ Hackathon Submission Details
 
 ### How We Used Gemini + Pipecat
 
-Gemini 1.5 Flash (Vision):
+**Gemini 1.5 Flash (Vision):**
 
 - Analyzes screenshots every 60 seconds to understand what's on screen
 - Processes multimodal input (image + task description + timestamp)
 - Returns structured JSON indicating if user is on-task or distracted
 - Provides intelligent context understanding (distinguishes research from distraction)
 
-Gemini 2.0 Flash Experimental (LLM via Pipecat):
+**Gemini 2.0 Flash Experimental (LLM via Pipecat):**
 
-- Powers the conversational voice bot through Pipecat's GoogleLLMService
+- Powers the conversational voice bot through Pipecat's `GoogleLLMService`
 - Generates empathetic, contextual responses during interventions
-- Maintains conversation history via LLMContextAggregatorPair
+- Maintains conversation history via `LLMContextAggregatorPair`
 - Uses warm, supportive personality to help users get back on track
+- Gracefully ends conversations when user commits to getting back on track
 
-Pipecat AI Framework:
+**Pipecat AI Framework:**
 
 - Orchestrates the entire voice pipeline with modular processors
 - Pipeline: LocalAudioInput → GoogleSTTService → LLMUserAggregator → GoogleLLMService (Gemini) → GoogleTTSService → LocalAudioOutput → LLMAssistantAggregator
@@ -47,15 +65,35 @@ Pipecat AI Framework:
 - Manages interruptions and conversation state automatically
 - Enables local audio through PyAudio (no browser needed)
 
+### 💡 Technical Highlights
+
+**Intelligent Distraction Detection:**
+
+- Custom prompt engineering to make Gemini Vision strict about distractions
+- Distinguishes between legitimate research and actual procrastination
+- Immediate intervention on first distraction (configurable threshold)
+
+**Seamless Voice Experience:**
+
+- Custom `GoodbyeDetector` processor for natural conversation endings
+- Initial greeting auto-triggers when intervention starts
+- VAD tuning prevents audio feedback loops (crucial for local audio)
+
+**Production-Ready Error Handling:**
+
+- Graceful degradation when APIs fail
+- Proper async cleanup on shutdown
+- Comprehensive debug logging
+
 ### Other Tools & Integrations
 
-- Google Cloud Speech-to-Text: Converts user voice to text for Gemini LLM processing
-- Google Cloud Text-to-Speech: Converts Gemini's responses to natural speech (en-US-Journey-D voice)
-- mss (Multi-Screenshot): Fast, cross-platform screenshot capture library
-- PyAudio: Local audio I/O for microphone input and speaker output
-- Silero VAD: Voice Activity Detection to determine when user is speaking
-- python-dotenv: Secure environment variable management for API keys
-- loguru: Enhanced logging for debugging and monitoring
+- **Google Cloud Speech-to-Text**: Converts user voice to text for Gemini LLM processing
+- **Google Cloud Text-to-Speech**: Converts Gemini's responses to natural speech (en-US-Journey-D voice)
+- **mss**: Fast, cross-platform screenshot capture library
+- **PyAudio**: Local audio I/O for microphone input and speaker output
+- **Silero VAD**: Voice Activity Detection to determine when user is speaking
+- **python-dotenv**: Secure environment variable management for API keys
+- **loguru**: Enhanced logging for debugging and monitoring
 
 ### What We Built During the Hackathon vs. Prior Work
 
@@ -71,35 +109,6 @@ Everything was built entirely during the hackathon (100% new):
 - Full error handling and graceful shutdown
 - Comprehensive documentation and setup guides
 
-No prior work or existing codebase - this was built from the ground up for this hackathon.
-
-### Feedback on Tools Used
-
-Gemini 1.5 Flash (Vision):
-
-- Pros: Fast analysis (<1 second), perfect for real-time monitoring; strong context understanding that distinguishes task-related browsing from distraction; high rate limits (60 req/min) made development smooth
-- Challenges: Needed to tune safety settings to prevent empty responses initially
-- Suggestions: More examples in docs for structured JSON output with vision
-
-Gemini 2.0 Flash Experimental (LLM via Pipecat):
-
-- Pros: Works seamlessly with Pipecat's GoogleLLMService; generates natural, warm conversational responses; latest experimental model provides improved conversation quality
-- Suggestions: Native streaming audio support would eliminate need for separate STT/TTS services
-
-Pipecat AI:
-
-- Pros: Made complex voice pipeline development straightforward; great documentation with clear examples for Google services; modular design makes it easy to swap components
-- Challenges: Understanding frame flow and aggregators took some time; LLMMessagesFrame was deprecated mid-development which required adaptation
-- Suggestions: More examples of local audio transport with VAD tuning would be helpful
-
-Google Cloud STT/TTS:
-
-- Pros: High quality, natural-sounding voice; reliable and consistent performance throughout development
-- Challenges: Service account creation has many steps and can be complex for first-time users
-- Suggestions: Simpler auth flow for hackathon/prototyping use cases
-
-### Live Demo Link
-
 Due to the nature of this application (requires screen recording permissions, local audio, and runs on user's machine), a traditional web demo isn't applicable. However, you can:
 
 1. Clone the repo and run locally (15-minute setup)
@@ -108,14 +117,37 @@ Due to the nature of this application (requires screen recording permissions, lo
 
 ---
 
-## Features
+## ⚡ Quick Start
 
-- Screen Monitoring: Captures screenshots every 60 seconds to track your activity
-- Vision Analysis: Uses Google Gemini 1.5 Flash with vision to analyze what you're doing
-- Smart Detection: Distinguishes between on-task and distracted behavior with AI
-- Local Voice Intervention: Speaks to you directly through your laptop speakers when distractions are detected
-- Natural Conversation: Uses Pipecat AI with Google Speech-to-Text, Gemini LLM, and Google Text-to-Speech for fluid voice interactions
-- Real-time Audio: No browser needed - audio plays directly through your speakers and listens through your microphone
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/sherpa-ai.git
+cd sherpa-ai
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up .env with your API keys
+GOOGLE_API_KEY=your_key_here
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+
+# Run Sherpa
+python main.py
+```
+
+Full setup guide below ⬇️
+
+---
+
+## ✨ Features
+
+- 📸 **Screen Monitoring**: Captures screenshots every 60 seconds (configurable) to track your activity
+- 🧠 **Vision Analysis**: Gemini 1.5 Flash analyzes what you're doing in <1 second
+- 🎯 **Smart Detection**: Distinguishes between on-task and distracted behavior with AI
+- 🎤 **Voice Intervention**: Speaks to you directly through your laptop speakers when distractions are detected
+- 💬 **Natural Conversation**: Full voice pipeline with Google STT, Gemini 2.0 LLM, and Google TTS
+- 🏠 **Runs Locally**: No browser needed—audio plays directly through speakers and listens through microphone
+- 🔒 **Privacy-First**: Screenshots are analyzed then discarded, never stored
 
 ## Architecture
 
@@ -656,22 +688,55 @@ Pipecat:
 - Built-in VAD and interruption handling
 - Easy to extend
 
-## Credits
+## 🎯 Future Improvements
 
-Built for the AI Tinkerers Gemini Pipecat Hackathon
+If we had more time, we'd add:
 
-Technologies:
+- **Task templates**: Pre-built prompts for "coding", "writing", "studying", etc.
+- **Productivity insights**: Daily/weekly reports on focus time
+- **Custom voices**: Let users choose their coach's personality
+- **Team mode**: Sherpa for group accountability
+- **Mobile app**: Monitor phone distractions too
 
-- Google Gemini - Vision & LLM
-- Google Cloud Speech & TTS - Voice services
-- Pipecat AI - Voice bot framework
-- mss - Screenshot capture
-- PyAudio - Audio I/O
+## 🏆 Built for AI Tinkerers Gemini x Pipecat Hackathon
 
-## Support
+**Technologies:**
 
-For issues or questions:
+- 🧠 Google Gemini 1.5 Flash (Vision) + 2.0 Flash (LLM)
+- 🎙️ Google Cloud Speech-to-Text & Text-to-Speech
+- 🔧 Pipecat AI - Voice bot framework
+- 📸 mss - Screenshot capture
+- 🔊 PyAudio - Local audio I/O
 
-- Open an issue on GitHub
-- Check troubleshooting section above
-- Review Google Cloud documentation for API issues
+**Timeline:** 48 hours from idea to working demo
+
+**What We Learned:** Building real-time AI systems requires careful tuning (VAD, safety settings, prompts). The combination of Gemini Vision + Pipecat voice is incredibly powerful—you can build genuinely useful AI assistants in a weekend.
+
+---
+
+## 💙 Acknowledgments
+
+Thanks to:
+
+- **Google** for Gemini API and cloud services
+- **Pipecat AI** for the amazing voice framework
+- **AI Tinkerers** for organizing this hackathon
+- **You** for checking out Sherpa!
+
+---
+
+## 📫 Contact & Support
+
+- 🐛 **Issues**: [Open an issue on GitHub](https://github.com/yourusername/sherpa-ai/issues)
+- 📖 **Troubleshooting**: See sections above
+- 🎥 **Demo**: [Watch on YouTube](https://youtu.be/2af80VaH_A8)
+
+---
+
+<div align="center">
+
+**Built with ❤️ and too much coffee ☕**
+
+_If Sherpa helped you stay focused, give it a ⭐ on GitHub!_
+
+</div>

@@ -34,21 +34,23 @@ class GoodbyeDetector(FrameProcessor):
     def __init__(self):
         super().__init__()
         self._should_end = False
+        self._goodbye_detected = False
 
     async def process_frame(self, frame, direction):
         """Check if the text contains GOODBYE."""
         await super().process_frame(frame, direction)
 
-        # Check text frames from the LLM for GOODBYE
-        if isinstance(frame, TextFrame):
-            if "GOODBYE" in frame.text.upper():
-                logger.info("👋 Sherpa said goodbye - ending conversation")
-                self._should_end = True
-                # Queue an EndFrame to stop the pipeline
-                await self.push_frame(EndFrame())
-
-        # Pass the frame along
+        # Pass the frame along first
         await self.push_frame(frame, direction)
+
+        # Check text frames from the LLM for GOODBYE
+        # Only check once to avoid multiple EndFrames
+        if isinstance(frame, TextFrame) and not self._goodbye_detected:
+            if "GOODBYE" in frame.text.upper():
+                logger.info("👋 Sherpa said goodbye - will end conversation after audio finishes")
+                self._goodbye_detected = True
+                # Queue an EndFrame to stop the pipeline AFTER this text is spoken
+                await self.push_frame(EndFrame())
 
 
 async def run_sherpa_bot(
@@ -175,14 +177,24 @@ Start by saying: "Hey! I noticed you might be off track. What are you working on
         logger.info("🔊 Speaking through your speakers...")
         logger.info("💬 Sherpa will speak first...\n")
 
-        # Queue initial transcription to trigger Sherpa's greeting
-        # This simulates the user saying "Hi Sherpa" which is already in the context
-        await task.queue_frames([
-            TranscriptionFrame(text="Hi Sherpa", user_id="user", timestamp=datetime.now().isoformat())
-        ])
+        # Create an async task to queue the initial greeting after pipeline starts
+        async def queue_initial_greeting():
+            # Wait a bit for pipeline to be fully ready
+            await asyncio.sleep(0.5)
+            # Queue initial transcription to trigger Sherpa's greeting
+            await task.queue_frames([
+                TranscriptionFrame(text="Hi Sherpa", user_id="user", timestamp=datetime.now().isoformat())
+            ])
+
+        # Start the greeting task
+        greeting_task = asyncio.create_task(queue_initial_greeting())
 
         # Run the bot - Sherpa will speak first with the greeting
         await runner.run(task)
+
+        # Cleanup
+        if not greeting_task.done():
+            greeting_task.cancel()
 
         logger.info("\n👋 Sherpa voice bot ended")
 
