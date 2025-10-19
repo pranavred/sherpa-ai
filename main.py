@@ -1,6 +1,6 @@
 """
 Sherpa: AI Productivity Coach
-Main application with screenshot monitoring + voice intervention.
+
 """
 import asyncio
 import os

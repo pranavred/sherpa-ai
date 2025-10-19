@@ -66,12 +66,19 @@ Analyze this screenshot and respond in JSON format:
     "needs_intervention": true/false
 }}
 
-Guidelines:
+Guidelines for determining if on-task:
 - If the task is "No task set", mark is_on_task as true
-- Consider research, documentation, and thinking time as on-task
-- Mark needs_intervention true only if clearly distracted (social media, entertainment, shopping)
-- Be understanding - brief distractions are normal
-- If uncertain, lean towards is_on_task=true
+- For task "Coding": Only coding environments (IDE, terminal, GitHub, Stack Overflow, documentation) are on-task
+- For task "Writing": Only writing apps (docs, editors, research) are on-task
+- Social media (Reddit, Twitter, Instagram, Facebook, TikTok) is ALWAYS off-task unless the task explicitly involves social media
+- Shopping (Amazon, eBay, etc.) is ALWAYS off-task unless the task explicitly involves shopping
+- Entertainment (YouTube, Netflix, games) is ALWAYS off-task unless the task explicitly involves entertainment
+- News sites, apartment browsing, sports sites = off-task unless directly related to stated task
+
+Be strict:
+- If browsing Reddit while task is "Coding" → is_on_task=false, needs_intervention=true
+- If browsing apartments while task is "Coding" → is_on_task=false, needs_intervention=true
+- If watching YouTube while task is "Writing" → is_on_task=false, needs_intervention=true
 
 Respond ONLY with valid JSON, no other text."""
 
@@ -160,10 +167,10 @@ Respond ONLY with valid JSON, no other text."""
 
         # Intervention criteria:
         # - Marked as needs_intervention by Gemini
-        # - OR distraction count >= 2
+        # - OR distraction count >= 1 (immediate intervention on first distraction)
         return (
             self.last_analysis.get('needs_intervention', False) or
-            self.distraction_count >= 2
+            self.distraction_count >= 1
         )
 
     def get_intervention_context(self) -> str:

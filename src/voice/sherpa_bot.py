@@ -4,13 +4,14 @@ Runs locally using your laptop's microphone and speakers (no browser required).
 """
 import asyncio
 import os
+from datetime import datetime
 
 from loguru import logger
 from dotenv import load_dotenv
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import EndFrame, TextFrame
+from pipecat.frames.frames import EndFrame, TextFrame, UserStartedSpeakingFrame, UserStoppedSpeakingFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -22,6 +23,7 @@ from pipecat.services.google.llm import GoogleLLMService
 from pipecat.services.google.tts import GoogleTTSService
 from pipecat.transcriptions.language import Language
 from pipecat.transports.local.audio import LocalAudioTransport, LocalAudioTransportParams
+from pipecat.frames.frames import TranscriptionFrame
 
 load_dotenv()
 
@@ -171,9 +173,15 @@ Start by saying: "Hey! I noticed you might be off track. What are you working on
         logger.info("🎤 Sherpa voice bot starting...")
         logger.info("🎧 Listening through your microphone...")
         logger.info("🔊 Speaking through your speakers...")
-        logger.info("💬 Say something or press Ctrl+C to end\n")
+        logger.info("💬 Sherpa will speak first...\n")
 
-        # Run the bot - it will start automatically with the context
+        # Queue initial transcription to trigger Sherpa's greeting
+        # This simulates the user saying "Hi Sherpa" which is already in the context
+        await task.queue_frames([
+            TranscriptionFrame(text="Hi Sherpa", user_id="user", timestamp=datetime.now().isoformat())
+        ])
+
+        # Run the bot - Sherpa will speak first with the greeting
         await runner.run(task)
 
         logger.info("\n👋 Sherpa voice bot ended")
