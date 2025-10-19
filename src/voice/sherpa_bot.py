@@ -10,12 +10,13 @@ from dotenv import load_dotenv
 
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import EndFrame
+from pipecat.frames.frames import EndFrame, TextFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.services.google.stt import GoogleSTTService
 from pipecat.services.google.llm import GoogleLLMService
 from pipecat.services.google.tts import GoogleTTSService
@@ -23,6 +24,29 @@ from pipecat.transcriptions.language import Language
 from pipecat.transports.local.audio import LocalAudioTransport, LocalAudioTransportParams
 
 load_dotenv()
+
+
+class GoodbyeDetector(FrameProcessor):
+    """Detects when Sherpa says GOODBYE and ends the conversation."""
+
+    def __init__(self):
+        super().__init__()
+        self._should_end = False
+
+    async def process_frame(self, frame, direction):
+        """Check if the text contains GOODBYE."""
+        await super().process_frame(frame, direction)
+
+        # Check text frames from the LLM for GOODBYE
+        if isinstance(frame, TextFrame):
+            if "GOODBYE" in frame.text.upper():
+                logger.info("👋 Sherpa said goodbye - ending conversation")
+                self._should_end = True
+                # Queue an EndFrame to stop the pipeline
+                await self.push_frame(EndFrame())
+
+        # Pass the frame along
+        await self.push_frame(frame, direction)
 
 
 async def run_sherpa_bot(
@@ -64,7 +88,7 @@ async def run_sherpa_bot(
         # Google Gemini LLM
         llm = GoogleLLMService(
             api_key=os.getenv("GOOGLE_API_KEY"),
-            model="gemini-1.5-flash"
+            model="gemini-2.0-flash-exp"
         )
 
         # Google Text-to-Speech
@@ -94,25 +118,39 @@ Example approaches:
 - "Taking a quick break? That's totally fine!"
 - "I hear you. Want to get back to [task], or is there something blocking you?"
 
+IMPORTANT - Ending the conversation:
+When the user indicates they want to get back to work (e.g., "let me get back to it", "I'll focus now", "yeah I should work"), respond with a brief encouraging message and then say "GOODBYE" to end the conversation.
+
+Example endings:
+- "Great! Good luck with your coding. GOODBYE"
+- "Sounds good! I'll check in later if needed. GOODBYE"
+- "Perfect! Get back to it. GOODBYE"
+
 Remember: Keep it SHORT. Voice conversations should feel natural, not like reading an essay.
 
 Start by saying: "Hey! I noticed you might be off track. What are you working on right now?"
 """
 
-        # Create LLM context with system message
+        # Create LLM context with system message and initial user trigger
+        # The user message triggers Sherpa to speak first (required for LLM to respond)
         initial_messages = [
             {"role": "system", "content": system_prompt},
+            {"role": "user", "content": "Hi Sherpa"},  # Triggers the initial greeting
         ]
 
         context = LLMContext(messages=initial_messages)
         context_aggregator = LLMContextAggregatorPair(context)
 
-        # Pipeline: Input -> STT -> User Context -> LLM -> TTS -> Output -> Assistant Context
+        # Create goodbye detector
+        goodbye_detector = GoodbyeDetector()
+
+        # Pipeline: Input -> STT -> User Context -> LLM -> Goodbye Detector -> TTS -> Output -> Assistant Context
         pipeline = Pipeline([
             transport.input(),              # Audio in from microphone
             stt,                            # Google Speech-to-Text
             context_aggregator.user(),      # Add user messages to context
             llm,                            # Gemini LLM
+            goodbye_detector,               # Detect GOODBYE and end conversation
             tts,                            # Google Text-to-Speech
             transport.output(),             # Audio out to speakers
             context_aggregator.assistant(), # Add assistant messages to context

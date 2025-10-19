@@ -13,10 +13,13 @@ from src.voice.sherpa_bot import start_voice_intervention
 
 load_dotenv()
 
+# Configuration
+SCREENSHOT_INTERVAL_SECONDS = 10  # How often to take screenshots (in seconds)
+
 
 class SherpaApp:
-    def __init__(self):
-        self.capture = ScreenCapture(interval=60)  # 60 seconds
+    def __init__(self, screenshot_interval: int = SCREENSHOT_INTERVAL_SECONDS):
+        self.capture = ScreenCapture(interval=screenshot_interval)
         self.analyzer = GeminiAnalyzer(api_key=os.getenv('GOOGLE_API_KEY'))
         self.is_running = False
         self.in_conversation = False

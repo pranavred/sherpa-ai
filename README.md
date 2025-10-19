@@ -11,6 +11,7 @@ Built for the AI Tinkerers Gemini Pipecat Hackathon.
 [Demo Video - Watch Here] (60-120 seconds showing the product in action)
 
 Note: The demo shows:
+
 - Starting Sherpa and setting your task
 - Screen monitoring in action
 - Getting distracted (e.g., browsing Reddit)
@@ -25,18 +26,21 @@ Note: The demo shows:
 ### How We Used Gemini + Pipecat
 
 Gemini 1.5 Flash (Vision):
+
 - Analyzes screenshots every 60 seconds to understand what's on screen
 - Processes multimodal input (image + task description + timestamp)
 - Returns structured JSON indicating if user is on-task or distracted
 - Provides intelligent context understanding (distinguishes research from distraction)
 
-Gemini 1.5 Flash (LLM via Pipecat):
+Gemini 2.0 Flash Experimental (LLM via Pipecat):
+
 - Powers the conversational voice bot through Pipecat's GoogleLLMService
 - Generates empathetic, contextual responses during interventions
 - Maintains conversation history via LLMContextAggregatorPair
 - Uses warm, supportive personality to help users get back on track
 
 Pipecat AI Framework:
+
 - Orchestrates the entire voice pipeline with modular processors
 - Pipeline: LocalAudioInput → GoogleSTTService → LLMUserAggregator → GoogleLLMService (Gemini) → GoogleTTSService → LocalAudioOutput → LLMAssistantAggregator
 - Handles Voice Activity Detection (VAD) with Silero for natural conversation flow
@@ -56,6 +60,7 @@ Pipecat AI Framework:
 ### What We Built During the Hackathon vs. Prior Work
 
 Everything was built entirely during the hackathon (100% new):
+
 - Complete Sherpa AI system from scratch
 - Screen monitoring with Gemini Vision integration
 - Distraction detection logic and intervention triggers
@@ -71,20 +76,24 @@ No prior work or existing codebase - this was built from the ground up for this 
 ### Feedback on Tools Used
 
 Gemini 1.5 Flash (Vision):
+
 - Pros: Fast analysis (<1 second), perfect for real-time monitoring; strong context understanding that distinguishes task-related browsing from distraction; high rate limits (60 req/min) made development smooth
 - Challenges: Needed to tune safety settings to prevent empty responses initially
 - Suggestions: More examples in docs for structured JSON output with vision
 
-Gemini 1.5 Flash (LLM via Pipecat):
-- Pros: Works seamlessly with Pipecat's GoogleLLMService; generates natural, warm conversational responses; reliable performance after switching from 2.0-flash-exp (10 req/min) to 1.5-flash (60 req/min)
+Gemini 2.0 Flash Experimental (LLM via Pipecat):
+
+- Pros: Works seamlessly with Pipecat's GoogleLLMService; generates natural, warm conversational responses; latest experimental model provides improved conversation quality
 - Suggestions: Native streaming audio support would eliminate need for separate STT/TTS services
 
 Pipecat AI:
+
 - Pros: Made complex voice pipeline development straightforward; great documentation with clear examples for Google services; modular design makes it easy to swap components
 - Challenges: Understanding frame flow and aggregators took some time; LLMMessagesFrame was deprecated mid-development which required adaptation
 - Suggestions: More examples of local audio transport with VAD tuning would be helpful
 
 Google Cloud STT/TTS:
+
 - Pros: High quality, natural-sounding voice; reliable and consistent performance throughout development
 - Challenges: Service account creation has many steps and can be complex for first-time users
 - Suggestions: Simpler auth flow for hackathon/prototyping use cases
@@ -127,7 +136,7 @@ Due to the nature of this application (requires screen recording permissions, lo
 2. Vision Analysis
    ┌──────────────────┐
    │ Gemini Vision    │ → Analyzes: What's on screen?
-   │  (1.5 Flash)     │   Is user on-task? Distraction?
+   │  (2.0 Flash)     │   Is user on-task? Distraction?
    └────────┬─────────┘
             │ JSON analysis
             ▼
@@ -143,7 +152,7 @@ Due to the nature of this application (requires screen recording permissions, lo
    │            Pipecat Pipeline                       │
    │                                                   │
    │  Microphone → STT → LLM Context → Gemini LLM     │
-   │              (Google)              (1.5 Flash)    │
+   │              (Google)              (2.0 Flash)    │
    │                                        ↓          │
    │  Speakers ← TTS ← Response ← ← ← ← ← ←          │
    │           (Google)                                │
@@ -514,7 +523,7 @@ In `src/voice/sherpa_bot.py`, line 67:
 ```python
 llm = GoogleLLMService(
     api_key=os.getenv("GOOGLE_API_KEY"),
-    model="gemini-1.5-pro"  # Use Pro for better responses (slower, more expensive)
+    model="gemini-1.5-flash"  # Or use gemini-1.5-pro for better responses (slower, more expensive)
 )
 ```
 
